@@ -256,6 +256,17 @@ async def clear(ctx, amount: int):
         await ctx.send(f"Cleared {amount} messages.", delete_after=5)  # Send a confirmation message
     else:
         await ctx.send("You do not have permission to use this command.")
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        embed = discord.Embed(
+            title="Command Not Found",
+            description="The command you entered does not exist.",
+            color=discord.Color.red()
+        )
+        await ctx.send(embed=embed)
+
   
 
 keep_alive() 
