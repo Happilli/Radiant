@@ -1,8 +1,10 @@
 # Radiant Bot - Discord Bot
 
-Radiant Bot is an exclusive Discord bot for the Happillis server, enhancing the server experience with its engaging features.
+Radiant Bot is an exclusive Discord bot for the Happillis server, enriching the server experience with its engaging features.
 
-![Radiant Bot](https://cdn.discordapp.com/attachments/1145967795184607282/1146005557451436032/98142dc4d64357ddd72c736ef58b9b0f.jpg)
+<p align="center">
+  <img src="https://cdn.discordapp.com/attachments/1145967795184607282/1146005557451436032/98142dc4d64357ddd72c736ef58b9b0f.jpg" alt="Radiant Bot Logo" width="100">
+</p>
 
 ## Features
 
