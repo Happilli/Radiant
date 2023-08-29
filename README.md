@@ -1,45 +1,72 @@
-# Radiant Bot - Discord Bot
+# Radiant ⚡ Discord Bot
 
-Radiant Bot is an exclusive Discord bot for the Happillis server, enriching the server experience with its engaging features.
+![Bot Icon](https://cdn.discordapp.com/avatars/1145987153449467904/0ecf5715c05985c5b704e5548c91ddac.png?size=1024)
 
-<p align="center">
-  <img src="https://cdn.discordapp.com/attachments/1145967795184607282/1146005557451436032/98142dc4d64357ddd72c736ef58b9b0f.jpg" alt="Radiant Bot Logo" width="100">
-</p>
+## Description
+
+Radiant ⚡ is a feature-rich Discord bot created using the `discord.py` library. The bot has various functionalities such as avatar display, calculation, tag management, welcome/goodbye messages, and more.
 
 ## Features
 
-- Display user avatars with the `avt` command.
-- Warmly welcome new members and bid farewell to those leaving.
-- Check bot latency using the `ping` command.
-- Learn about the bot with `radiant` command.
-- Manage updates roadmap with `roadmap` command.
-- View latest updates using `updates` command.
-- Admin-only commands for user control.
+- Avatar display using the `avt` command
+- Basic calculations with the `calc` command
+- Tag management system
+- Welcome and goodbye messages for new members
+- Ping latency check with the `ping` command
+- Custom welcome message with the `radiant` command
+- Roadmap updates and displaying using the `updates` command
+- Restricting certain commands to specific users
+- Clearing messages with the `clear` command
 
-## Installation
+## Screenshots
 
-1. Clone this repository to your local machine.
-2. Install required Python packages: `pip install -r requirements.txt`
-3. Create a `.env` file and add your bot's token:
-   ```plaintext
-   CYPHER=YOUR_BOT_TOKEN
+![Bot Screenshot 1](https://cdn.discordapp.com/attachments/1146210015422726236/1146210230976397362/Screenshot_71.png)
+![Bot Screenshot 2](https://cdn.discordapp.com/attachments/1146210015422726236/1146210231244820520/Screenshot_70.png)
+
+## Getting Started
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/happilli/radiant.git
    ```
-4. Run the bot: `python bot.py`
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Set up your Discord bot token in a `.env` file:
+   ```env
+   CYPHER=your_token_here
+   ```
+4. Run the bot:
+   ```bash
+   python bot.py
+   ```
 
-## Hosting
+## Usage
 
-Radiant Bot is kept online through UptimeRobot, ensuring its availability.
+- Use the `help` command to get a list of available bot commands.
+- Use the `avt` command to display user avatars.
+- Use the `calc` command for simple arithmetic calculations.
+- Use the `radiant` command to welcome users with a custom message.
+- Use the `updates` command to see the roadmap updates.
+- Use the `restrict` and `unrestrict` commands to manage restricted users.
+- Use the `clear` command to clear messages in a channel.
 
 ## Contributing
 
-Contributions are welcome! Please open issues or pull requests for features and bug reports.
+Contributions are welcome! If you have any suggestions or improvements, feel free to open an issue or submit a pull request.
 
 ## License
 
-This project is under the [MIT License](LICENSE). Developed by Safal Lama.
+This project is licensed under the [MIT License](LICENSE).
+
+## Contact
+
+For inquiries or questions, you can reach me at [safalisgod@gmail.com](mailto:safalisgod@gmail.com).
+
+[![GitHub Stars](https://img.shields.io/github/stars/happilli/radiant.svg?style=flat-square)](https://github.com/happilli/radiant/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/happilli/radiant.svg?style=flat-square)](https://github.com/happilli/radiant/network)
+[![GitHub License](https://img.shields.io/github/license/happilli/radiant.svg?style=flat-square)](https://github.com/happilli/radiant/blob/main/LICENSE)
 
 
-Feel free to customize this template to match your project's style and requirements.
-```
 
-Make sure to replace `"YOUR_BOT_TOKEN"` with your actual bot token and update any other necessary information accordingly.

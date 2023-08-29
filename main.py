@@ -21,7 +21,160 @@ intents.typing = False
 intents.presences = False
 
 
-bot = commands.Bot(command_prefix=['R!','r!','r','R'], intents=intents)
+bot = commands.Bot(command_prefix=['R!','r!','r','R'], intents=intents,  help_command=None)
+
+@bot.command()
+async def help(ctx):
+    embed = discord.Embed(
+        title="Bot Commands",
+        description="Here's a list of available commands:",
+        color=discord.Color.green()
+    )
+
+    # Add commands and their descriptions
+    commands_info = [
+        ("**Avatar (`avt`)**", "Displays the avatar of a user."),
+        ("**Ping (`ping`)**", "Displays the bot's latency."),
+        ("**Welcome (`radiant`)**", "Displays a welcome message."),
+        ("**Updates (`updates`)**", "Displays the current roadmap updates."),
+        ("**Clear (`clear`)**", "Clears a specified number of messages from the channel."),
+      ("**Calculator (`calc`)**","Does simple arthemetics."),
+      ("**Tag (`tag`)**","Run the command to see available sub-commands.")
+    ]
+
+    for command_info in commands_info:
+        embed.add_field(name=command_info[0], value=command_info[1], inline=False)
+
+    embed.set_footer(text="Use the provided commands to interact with the bot!")
+
+    await ctx.send(embed=embed)
+
+
+# Load existing tags from a JSON file
+TAGS_FILE = "tags/tags.json"
+
+def load_tags():
+    try:
+        with open(TAGS_FILE, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+
+# Save tags to a JSON file
+def save_tags():
+    with open(TAGS_FILE, "w") as file:
+        json.dump(tags, file, indent=4)
+
+# Load tags when the bot starts
+tags = load_tags()
+
+# ... (your existing on_message, on_ready, and other event functions)
+@bot.command()
+async def tag(ctx, action: str, *args):
+    if action == "create":
+        tag_name = args[0]
+        tag_content = " ".join(args[1:])
+        if tag_name not in tags:
+            tags[tag_name] = {
+                'content': tag_content,
+                'creator': ctx.author.id
+            }
+            save_tags()  # Save tags after updating
+            await ctx.send(f"Tag '{tag_name}' created successfully!")
+        else:
+            await ctx.send(f"Tag '{tag_name}' already exists. Use edit to modify it.")
+
+    elif action == "delete":
+        tag_name = args[0]
+        if tag_name in tags:
+            if tags[tag_name]['creator'] == ctx.author.id:
+                del tags[tag_name]
+                save_tags()  # Save tags after updating
+                await ctx.send(f"Tag '{tag_name}' deleted successfully!")
+            else:
+                await ctx.send("You don't have permission to delete this tag.")
+        else:
+            await ctx.send(f"Tag '{tag_name}' doesn't exist.")
+
+    elif action == "edit":
+        tag_name = args[0]
+        if tag_name in tags:
+            if tags[tag_name]['creator'] == ctx.author.id:
+                new_content = " ".join(args[1:])
+                tags[tag_name]['content'] = new_content
+                save_tags()  # Save tags after updatinghomie.happilli.repl.co
+                await ctx.send(f"Tag '{tag_name}' edited successfully!")
+            else:
+                await ctx.send("You don't have permission to edit this tag.")
+        else:
+            await ctx.send(f"Tag '{tag_name}' doesn't exist.")
+
+    elif action == "list":
+        user = ctx.message.mentions[0] if len(args) > 0 else ctx.author
+        user_tags = [tag_name for tag_name, tag_data in tags.items() if tag_data['creator'] == user.id]
+        if user_tags:
+            tag_list = "\n".join(user_tags)
+            embed = discord.Embed(title=f"{user.name}'s Tags", description=tag_list, color=0x7289DA)
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"{user.mention} has no tags.")
+
+    else:  # View a tag's content
+        tag_name = action
+        if tag_name in tags:
+            await ctx.send(tags[tag_name]['content'])
+        else:
+            await ctx.send(f"Tag '{tag_name}' doesn't exist.")
+
+def save_tags():
+    with open(TAGS_FILE, "w") as file:
+        json.dump(tags, file, indent=4)
+
+
+# Define the help command
+@bot.command(name='tagcmds', brief='Show available commands and descriptions')
+async def show_help(ctx):
+    embed = discord.Embed(title='Tag Bot Help', description='Here are the available commands:', color=0x7289DA)
+    
+    # Add descriptions for each command
+    commands_info = [
+        ('create', 'Create a new tag. Usage: `!tag create <tag_name> <tag_content>`'),
+        ('delete', 'Delete a tag you created. Usage: `!tag delete <tag_name>`'),
+        ('edit', 'Edit the content of a tag you created. Usage: `!tag edit <tag_name> <new_content>`'),
+        ('list', 'List all tags created by a user. Usage: `!tag list [@user]`'),
+        ('view', 'View the content of a specific tag. Usage: `!tag <tag_name>`')
+    ]
+    
+    for command, description in commands_info:
+        embed.add_field(name=f'!tag {command}', value=description, inline=False)
+    
+    await ctx.send(embed=embed)
+
+
+
+
+
+
+
+
+@bot.command()
+async def calc(ctx, *, expression: str):
+    try:
+        result = eval(expression)
+        embed = discord.Embed(
+            title="Calculator",
+            description=f"Expression: {expression}\nResult: {result}",
+            color=discord.Color.green()
+        )
+        await ctx.send(embed=embed)
+    except Exception as e:
+        embed = discord.Embed(
+            title="Calculator",
+            description=f"An error occurred: {e}",
+            color=discord.Color.red()
+        )
+        await ctx.send(embed=embed)
+
 
 
 @bot.command()
