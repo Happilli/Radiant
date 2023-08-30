@@ -68,7 +68,8 @@ def save_tags():
 # Load tags when the bot starts
 tags = load_tags()
 
-# ... (your existing on_message, on_ready, and other event functions)
+
+
 @bot.command()
 async def tag(ctx, action: str, *args):
     if action == "create":
@@ -80,21 +81,77 @@ async def tag(ctx, action: str, *args):
                 'creator': ctx.author.id
             }
             save_tags()  # Save tags after updating
-            await ctx.send(f"Tag '{tag_name}' created successfully!")
+            embed = discord.Embed(
+                title="Tag Created",
+                description=f"Tag '{tag_name}' created successfully!",
+                color=0x00FF00
+            )
+            await ctx.send(embed=embed)
         else:
-            await ctx.send(f"Tag '{tag_name}' already exists. Use edit to modify it.")
+            embed = discord.Embed(
+                title="Tag Already Exists",
+                description=f"Tag '{tag_name}' already exists. Use `!tag edit` to modify it.",
+                color=0xFF0000
+            )
+            await ctx.send(embed=embed)
 
+
+    elif action == "transfer":
+        tag_name = args[0]
+        target_user = ctx.message.mentions[0]
+        if tag_name in tags:
+            if tags[tag_name]['creator'] == ctx.author.id:
+                tags[tag_name]['creator'] = target_user.id
+                save_tags()  # Save tags after updating
+                embed = discord.Embed(
+                    title="Tag Transferred",
+                    description=f"Tag '{tag_name}' transferred to {target_user.mention} successfully!",
+                    color=0x00FF00
+                )
+                await ctx.send(embed=embed)
+            else:
+                embed = discord.Embed(
+                    title="Permission Denied",
+                    description="You don't have permission to transfer this tag.",
+                    color=0xFF0000
+                )
+                await ctx.send(embed=embed)
+        else:
+            embed = discord.Embed(
+                title="Tag Not Found",
+                description=f"Tag '{tag_name}' doesn't exist.",
+                color=0xFF0000
+            )
+            await ctx.send(embed=embed)
+    
+
+      
     elif action == "delete":
         tag_name = args[0]
         if tag_name in tags:
             if tags[tag_name]['creator'] == ctx.author.id:
                 del tags[tag_name]
                 save_tags()  # Save tags after updating
-                await ctx.send(f"Tag '{tag_name}' deleted successfully!")
+                embed = discord.Embed(
+                    title="Tag Deleted",
+                    description=f"Tag '{tag_name}' deleted successfully!",
+                    color=0x00FF00
+                )
+                await ctx.send(embed=embed)
             else:
-                await ctx.send("You don't have permission to delete this tag.")
+                embed = discord.Embed(
+                    title="Permission Denied",
+                    description="You don't have permission to delete this tag.",
+                    color=0xFF0000
+                )
+                await ctx.send(embed=embed)
         else:
-            await ctx.send(f"Tag '{tag_name}' doesn't exist.")
+            embed = discord.Embed(
+                title="Tag Not Found",
+                description=f"Tag '{tag_name}' doesn't exist.",
+                color=0xFF0000
+            )
+            await ctx.send(embed=embed)
 
     elif action == "edit":
         tag_name = args[0]
@@ -102,39 +159,73 @@ async def tag(ctx, action: str, *args):
             if tags[tag_name]['creator'] == ctx.author.id:
                 new_content = " ".join(args[1:])
                 tags[tag_name]['content'] = new_content
-                save_tags()  # Save tags after updatinghomie.happilli.repl.co
-                await ctx.send(f"Tag '{tag_name}' edited successfully!")
+                save_tags()  # Save tags after updating
+                embed = discord.Embed(
+                    title="Tag Edited",
+                    description=f"Tag '{tag_name}' edited successfully!",
+                    color=0x00FF00
+                )
+                await ctx.send(embed=embed)
             else:
-                await ctx.send("You don't have permission to edit this tag.")
+                embed = discord.Embed(
+                    title="Permission Denied",
+                    description="You don't have permission to edit this tag.",
+                    color=0xFF0000
+                )
+                await ctx.send(embed=embed)
         else:
-            await ctx.send(f"Tag '{tag_name}' doesn't exist.")
+            embed = discord.Embed(
+                title="Tag Not Found",
+                description=f"Tag '{tag_name}' doesn't exist.",
+                color=0xFF0000
+            )
+            await ctx.send(embed=embed)
 
     elif action == "list":
         user = ctx.message.mentions[0] if len(args) > 0 else ctx.author
         user_tags = [tag_name for tag_name, tag_data in tags.items() if tag_data['creator'] == user.id]
         if user_tags:
             tag_list = "\n".join(user_tags)
-            embed = discord.Embed(title=f"{user.name}'s Tags", description=tag_list, color=0x7289DA)
+            embed = discord.Embed(
+                title=f"{user.name}'s Tags",
+                description=tag_list,
+                color=0x7289DA
+            )
             await ctx.send(embed=embed)
         else:
-            await ctx.send(f"{user.mention} has no tags.")
+            embed = discord.Embed(
+                title="No Tags",
+                description=f"{user.mention} has no tags.",
+                color=0xFF0000
+            )
+            await ctx.send(embed=embed)
 
     else:  # View a tag's content
         tag_name = action
         if tag_name in tags:
-            await ctx.send(tags[tag_name]['content'])
+            embed = discord.Embed(
+                title=f"Tag: {tag_name}",
+                description=tags[tag_name]['content'],
+                color=0x7289DA
+            )
+            await ctx.send(embed=embed)
         else:
-            await ctx.send(f"Tag '{tag_name}' doesn't exist.")
+            embed = discord.Embed(
+                title="Tag Not Found",
+                description=f"Tag '{tag_name}' doesn't exist.",
+                color=0xFF0000
+            )
+            await ctx.send(embed=embed)
 
-def save_tags():
-    with open(TAGS_FILE, "w") as file:
-        json.dump(tags, file, indent=4)
+    
 
-
-# Define the help command
 @bot.command(name='tagcmds', brief='Show available commands and descriptions')
 async def show_help(ctx):
-    embed = discord.Embed(title='Tag Bot Help', description='Here are the available commands:', color=0x7289DA)
+    embed = discord.Embed(
+        title='Tag Bot Help',
+        description='Here are the available commands:',
+        color=0x7289DA
+    )
     
     # Add descriptions for each command
     commands_info = [
@@ -142,13 +233,15 @@ async def show_help(ctx):
         ('delete', 'Delete a tag you created. Usage: `!tag delete <tag_name>`'),
         ('edit', 'Edit the content of a tag you created. Usage: `!tag edit <tag_name> <new_content>`'),
         ('list', 'List all tags created by a user. Usage: `!tag list [@user]`'),
-        ('view', 'View the content of a specific tag. Usage: `!tag <tag_name>`')
+        ('view', 'View the content of a specific tag. Usage: `!tag <tag_name>`'),
+        ('transfer', 'Transfer ownership of a tag you created. Usage: `!tag transfer <tag_name> <@target_user>`')
     ]
     
     for command, description in commands_info:
         embed.add_field(name=f'!tag {command}', value=description, inline=False)
     
     await ctx.send(embed=embed)
+
 
 
 
@@ -184,12 +277,11 @@ async def avt(ctx, user: discord.User = None):
 
     embed = discord.Embed(title=f"{user.name}'s Avatar", color=discord.Color.blue())
     embed.set_image(url=avatar_url)
+    embed.add_field(name="Avatar URL", value=f"[Click Here]({avatar_url})")  # Make the URL clickable
     
     await ctx.send(embed=embed)
 
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user.name}')
+
 
 @bot.event
 async def on_member_join(member):
@@ -420,7 +512,99 @@ async def on_command_error(ctx, error):
         )
         await ctx.send(embed=embed)
 
-  
+# Event: Message received
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return  # Ignore messages sent by the bot itself
+
+    await bot.process_commands(message)  # Process commands in the message
+
+
+
+PROFILES_FILE = "profiles/profiles.json"
+
+# Load profiles from the JSON file
+def load_profiles():
+    try:
+        with open(PROFILES_FILE, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+
+# Save profiles to the JSON file
+def save_profiles(profiles):
+    with open(PROFILES_FILE, "w") as file:
+        json.dump(profiles, file, indent=4)
+
+# Load profiles when the bot starts
+profiles = load_profiles()
+
+@bot.command()
+async def profile(ctx, user: discord.Member = None):
+    user = user or ctx.author
+    user_id = str(user.id)
+    
+    if user_id in profiles:
+        profile_data = profiles[user_id]
+        name = profile_data.get("name", "N/A")
+        age = profile_data.get("age", "N/A")
+        affiliation = profile_data.get("affiliation", "N/A")
+        social_media = profile_data.get("social_media", "N/A")
+        
+        avatar_url = user.avatar.url if user.avatar else user.default_avatar.url
+        
+        embed = discord.Embed(title=f"{user.name}'s Profile", color=0x7289DA)
+        embed.set_thumbnail(url=avatar_url)  # Set the grabbed avatar as the thumbnail
+        
+        embed.add_field(name="Name", value=name, inline=False)
+        embed.add_field(name="Age", value=age, inline=False)
+        embed.add_field(name="Affiliation", value=affiliation, inline=False)
+        embed.add_field(name="Social Media", value=f"[View]({social_media})", inline=False)
+        
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send(f"{user.display_name} doesn't have a profile. Use `r!profile_config` to create one.")
+
+
+@bot.command()
+async def profile_delete(ctx):
+    user_id = str(ctx.author.id)
+    if user_id in profiles:
+        del profiles[user_id]
+        save_profiles(profiles)
+        await ctx.send("Your profile has been deleted.")
+    else:
+        await ctx.send("You don't have a profile to delete.")
+
+@bot.command()
+async def profile_config(ctx, field: str, *, value: str):
+    allowed_fields = ["name", "age", "affiliation", "social_media"]
+    if field.lower() in allowed_fields:
+        user_id = str(ctx.author.id)
+        if user_id not in profiles:
+            profiles[user_id] = {}
+        profiles[user_id][field.lower()] = value
+        save_profiles(profiles)
+        await ctx.send(f"Your {field} has been updated.")
+    else:
+        await ctx.send(f"Invalid field. Allowed fields: {', '.join(allowed_fields)}")
+
+@bot.command()
+async def config_help(ctx):
+    allowed_fields = {
+        "name": "Your Name",
+        "age": "Your Age",
+        "affiliation": "Your Affiliation",
+        "social_media": "Your Social Media Link"
+    }
+    
+    embed = discord.Embed(title="Possible Configuration Fields", color=0x7289DA)
+    field_list = "\n".join([f"`{field}`: {example}" for field, example in allowed_fields.items()])
+    embed.add_field(name="Fields and Examples", value=field_list, inline=False)
+    embed.set_footer(text="Use r!profile_config [field] [value] to configure your profile.")
+    
+    await ctx.send(embed=embed)
 
 keep_alive() 
 bot.run(TOKEN)
