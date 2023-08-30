@@ -17,6 +17,8 @@ Radiant ⚡ is a feature-rich Discord bot created using the `discord.py` library
 - Roadmap updates and displaying using the `updates` command
 - Restricting certain commands to specific users
 - Clearing messages with the `clear` command
+- Creating tags nd many more `tag`
+- secued profiles `profile`
 
 ## Screenshots
 
