@@ -72,3 +72,7 @@ For inquiries or questions, you can reach me at [safalisgod@gmail.com](mailto:sa
 
 
 
+## Note
+```
+My bot isn't fully developed so it's stilly buggy and has some json file issues, it will take time for me to update and fix all the issue maybe, Hopes high !!
+```
