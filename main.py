@@ -9,6 +9,7 @@ import math
 import random 
 from PIL import Image
 import requests
+import openai  
 
 
 #load_dotenv()
@@ -21,33 +22,75 @@ intents.typing = False
 intents.presences = False
 
 
-bot = commands.Bot(command_prefix=['R!','r!','r','R'], intents=intents,  help_command=None)
+bot = commands.Bot(command_prefix=['R!','r!'], intents=intents,  help_command=None)
 
 @bot.command()
-async def help(ctx):
+async def help(ctx, page: int = 1):
+    commands_info = [
+        ("**help**", "Display the list of available commands and their usage."),
+        ("**avt [user]**", "Display the avatar of a user. If no user is provided, show the author's avatar."),
+        ("**ping**", "Display the bot's latency."),
+        ("**radiant**", "Display a welcome message."),
+        ("**updates**", "Display the current roadmap updates."),
+        ("**clear [amount]**", "Clear a specified number of messages from the channel."),
+        ("**calc [expression]**", "Perform simple arithmetic calculations."),
+        ("**tag create [tag_name] [tag_content]**", "Create a new tag with the given name and content."),
+        ("**tag delete [tag_name]**", "Delete a tag you created."),
+        ("**tag edit [tag_name] [new_content]**", "Edit the content of a tag you created."),
+        ("**tag list [@user]**", "List all tags created by a user."),
+        ("**tag [tag_name]**", "View the content of a specific tag."),
+        ("**tag transfer [tag_name] [@target_user]**", "Transfer ownership of a tag you created."),
+        ("**tagcmds**", "Show available tag commands and their descriptions."),
+        ("**profile**", "View your profile."),
+        ("**create_profile**", "Create your profile by answering a series of questions."),
+        ("**profile_config**", "Configure your profile by answering questions one by one."),
+        ("**profile_delete**", "Delete your profile."),
+        ("**restrict [@user]**", "Restrict a user from using bot commands."),
+        ("**unrestrict [@user]**", "Unrestrict a user previously restricted."),
+    ]
+
+    items_per_page = 5
+    start_index = (page - 1) * items_per_page
+    end_index = start_index + items_per_page
+
     embed = discord.Embed(
         title="Bot Commands",
         description="Here's a list of available commands:",
         color=discord.Color.green()
     )
 
-    # Add commands and their descriptions
-    commands_info = [
-        ("**Avatar (`avt`)**", "Displays the avatar of a user."),
-        ("**Ping (`ping`)**", "Displays the bot's latency."),
-        ("**Welcome (`radiant`)**", "Displays a welcome message."),
-        ("**Updates (`updates`)**", "Displays the current roadmap updates."),
-        ("**Clear (`clear`)**", "Clears a specified number of messages from the channel."),
-      ("**Calculator (`calc`)**","Does simple arthemetics."),
-      ("**Tag (`tag`)**","Run the command to see available sub-commands.")
-    ]
+    for idx, command_info in enumerate(commands_info[start_index:end_index], start=start_index):
+        command_name, command_description = command_info
+        embed.add_field(name=f"{idx + 1}. {command_name}", value=command_description, inline=False)
 
-    for command_info in commands_info:
-        embed.add_field(name=command_info[0], value=command_info[1], inline=False)
+    total_pages = math.ceil(len(commands_info) / items_per_page)
+    embed.set_footer(text=f"Page {page}/{total_pages} - Use the provided commands to interact with the bot!")
 
-    embed.set_footer(text="Use the provided commands to interact with the bot!")
+    msg = await ctx.send(embed=embed)
+    if total_pages > 1:
+        await msg.add_reaction("⬅️")
+        await msg.add_reaction("➡️")
 
-    await ctx.send(embed=embed)
+        def reaction_check(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in ["⬅️", "➡️"]
+
+        try:
+            reaction, user = await bot.wait_for("reaction_add", check=reaction_check, timeout=60)
+
+            if str(reaction.emoji) == "⬅️" and page > 1:
+                await msg.delete()
+                await help(ctx, page - 1)
+            elif str(reaction.emoji) == "➡️" and page < total_pages:
+                await msg.delete()
+                await help(ctx, page + 1)
+            else:
+                await msg.clear_reactions()
+        except asyncio.TimeoutError:
+            await msg.clear_reactions()
+
+
+
+
 
 
 # Load existing tags from a JSON file
@@ -564,7 +607,7 @@ async def profile(ctx, user: discord.Member = None):
         
         await ctx.send(embed=embed)
     else:
-        await ctx.send(f"{user.display_name} doesn't have a profile. Use `r!profile_config` to create one.")
+        await ctx.send(f"{user.display_name} doesn't have a profile. Use `r!create_profile` to create one.")
 
 
 @bot.command()
@@ -578,33 +621,65 @@ async def profile_delete(ctx):
         await ctx.send("You don't have a profile to delete.")
 
 @bot.command()
-async def profile_config(ctx, field: str, *, value: str):
-    allowed_fields = ["name", "age", "affiliation", "social_media"]
-    if field.lower() in allowed_fields:
-        user_id = str(ctx.author.id)
-        if user_id not in profiles:
-            profiles[user_id] = {}
-        profiles[user_id][field.lower()] = value
-        save_profiles(profiles)
-        await ctx.send(f"Your {field} has been updated.")
-    else:
-        await ctx.send(f"Invalid field. Allowed fields: {', '.join(allowed_fields)}")
+async def create_profile(ctx):
+    user_id = str(ctx.author.id)
+    if user_id in profiles:
+        await ctx.send("You already have a profile. Use `r!profile_config` to update it.")
+        return
+
+    questions = {
+        "name": "What's your name?",
+        "age": "How old are you?",
+        "affiliation": "What's your affiliation?",
+        "social_media": "Provide a link to your social media (if any):"
+    }
+
+    answers = {}
+    for field, question in questions.items():
+        await ctx.send(question)
+
+        def check(m):
+            return m.author == ctx.author and m.channel == ctx.channel
+
+        try:
+            answer_msg = await bot.wait_for("message", check=check, timeout=60)
+            answers[field] = answer_msg.content
+        except asyncio.TimeoutError:
+            await ctx.send("You took too long to respond. Command cancelled.")
+            return
+
+    profiles[user_id] = answers
+    save_profiles(profiles)
+    await ctx.send("Profile created successfully!")
 
 @bot.command()
-async def config_help(ctx):
-    allowed_fields = {
-        "name": "Your Name",
-        "age": "Your Age",
-        "affiliation": "Your Affiliation",
-        "social_media": "Your Social Media Link"
-    }
-    
-    embed = discord.Embed(title="Possible Configuration Fields", color=0x7289DA)
-    field_list = "\n".join([f"`{field}`: {example}" for field, example in allowed_fields.items()])
-    embed.add_field(name="Fields and Examples", value=field_list, inline=False)
-    embed.set_footer(text="Use r!profile_config [field] [value] to configure your profile.")
-    
-    await ctx.send(embed=embed)
+async def profile_config(ctx):
+    user_id = str(ctx.author.id)
+    if user_id not in profiles:
+        profiles[user_id] = {}
+
+    allowed_fields = ["name", "age", "affiliation", "social_media"]
+
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel
+
+    for field in allowed_fields:
+        await ctx.send(f"Please configure your {field.capitalize()}.\nType your answer or `D` to skip:")
+
+        try:
+            answer_msg = await bot.wait_for("message", check=check, timeout=60)
+            answer = answer_msg.content
+
+            if answer.lower() != "d" and answer.lower() != "default":
+                profiles[user_id][field] = answer
+                save_profiles(profiles)
+        except asyncio.TimeoutError:
+            await ctx.send("You took too long to respond. Command cancelled.")
+            return
+
+    await ctx.send("Profile configuration complete!")
+
+
 
 keep_alive() 
 bot.run(TOKEN)
