@@ -41,7 +41,7 @@ Radiant ⚡ is a feature-rich Discord bot created using the `discord.py` library
    ```
 4. Run the bot:
    ```bash
-   python bot.py
+   python main.py
    ```
 
 ## Usage
@@ -76,3 +76,4 @@ For inquiries or questions, you can reach me at [safalisgod@gmail.com](mailto:sa
 ```
 My bot isn't fully developed so it's stilly buggy and has some json file issues, it will take time for me to update and fix all the issue maybe, Hopes high !!
 ```
+If you wonna use this, then source code is available woth full placeholders and skeletons needed for you, !
