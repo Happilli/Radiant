@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Radiant is active!"
+    return "Radiant is currently active!"
 
 def run():
     app.run(host="0.0.0.0", port=8080)
