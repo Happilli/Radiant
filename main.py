@@ -8,8 +8,8 @@ import asyncio
 import math
 import random 
 from PIL import Image
-import requests
-import openai  
+import requests 
+
 
 
 #load_dotenv()
@@ -22,7 +22,73 @@ intents.typing = False
 intents.presences = False
 
 
-bot = commands.Bot(command_prefix=['R!','r!'], intents=intents,  help_command=None)
+
+# Define custom prefix
+custom_prefix = commands.when_mentioned_or('R!', 'r!')
+
+# Create the bot with custom prefix and intents
+bot = commands.Bot(command_prefix=custom_prefix, intents=intents, help_command=None)
+
+# Define the economy file
+ECONOMY_FILE = "assets/economy.json"
+
+# Load existing economy data from the JSON file
+def load_economy():
+    try:
+        with open(ECONOMY_FILE, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+
+# Save economy data to the JSON file
+def save_economy(economy):
+    with open(ECONOMY_FILE, "w") as file:
+        json.dump(economy, file, indent=4)
+
+# Load economy data when the bot starts
+economy = load_economy()
+
+@bot.command()
+async def start_career(ctx):
+    user_id = str(ctx.author.id)
+
+    if user_id not in profiles:
+        await ctx.send("You need to create a profile first using `r!create_profile`.")
+        return
+
+    if user_id not in economy:
+        economy[user_id] = {"redants": 0}
+        save_economy(economy)
+        await ctx.send("Congratulations! You have started your career with 0 Redants.")
+
+@bot.command()
+async def balance(ctx, user: discord.User = None):
+    user = user or ctx.author
+    user_id = str(user.id)
+
+    if user_id not in economy:
+        await ctx.send("You haven't started your career yet. Use `r!start_career` to begin.")
+        return
+
+    redants_balance = economy[user_id]["redants"]
+
+    # Get the user's avatar URL
+    avatar_url = user.avatar.url if user.avatar else user.default_avatar.url
+
+    embed = discord.Embed(
+        title=f"{user.name}'s Redants Balance",
+        description=f"You currently have {redants_balance} Redants in your account.",
+        color=discord.Color.green()
+    )
+    embed.set_thumbnail(url=avatar_url)  # Display the user's avatar as thumbnail
+
+    await ctx.send(embed=embed)
+
+
+
+
+
+
 
 @bot.command()
 async def help(ctx, page: int = 1):
@@ -683,3 +749,5 @@ async def profile_config(ctx):
 
 keep_alive() 
 bot.run(TOKEN)
+
+
