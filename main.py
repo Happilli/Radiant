@@ -6,6 +6,7 @@ import aiohttp
 import os
 from dotenv import load_dotenv
 from io import BytesIO
+from webserver import keep_alive
 
 # Load environment variables
 load_dotenv()
@@ -163,5 +164,8 @@ async def clear(ctx, amount: int):
     else:
         await ctx.send("You don't have permission to use this command.")
 
+
+
+keep_alive()
 
 bot.run(TOKEN)
